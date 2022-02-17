@@ -1,0 +1,83 @@
+---
+title: "STAA566_HW2"
+author: "Manda Abhinay Reddy"
+output: html_document
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+--- 
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+I have chosen data of daily historical stock price of GameStop from February 2002 (the year it was listed) to January 2021 from kaggle. Through this assignment I would like check how the volume of stocks varies variation in prices. I have used the plotly functionality with all the necessary formatting techniques like Rangeslider and subplot functionality to merge two plots. 
+
+
+
+```{r}
+library(plotly)
+library(tidyverse)
+```
+
+```{r}
+
+GME <- read.csv("GME_Stock.csv")
+GME$year <- format(as.Date(GME$date, format="%Y-%m-%d"),"%Y")
+GME <- GME %>%
+  group_by(year)%>%
+  arrange(date)
+         
+head(GME, n=20)
+
+```
+
+```{r}
+
+GME_closing <- plot_ly(GME, 
+                x= ~ date,
+                y= ~ close_price,
+                name = 'Closing price',
+                type = 'scatter', 
+                mode = 'lines'
+                ) %>% layout(title = "GameStop stockprice data day wise",
+         xaxis = list(title="date"),
+         yaxis = list(title = "Closing price"))
+GME_closing
+```
+
+```{r}
+
+GME_vol <- plot_ly(GME, 
+        x= ~ date,
+        y= ~ volume,
+        name = 'Volume',
+        type = 'scatter', 
+        mode = 'lines'
+        ) %>% layout(title = "GameStop stockprice data day wise",
+         xaxis = list(title="date"),
+         yaxis = list(title = "Volume"))
+GME_vol
+```
+
+
+
+```{r fig.height=8, fig.width = 10}
+GME_new <- subplot(list(GME_closing,GME_vol),
+                              nrows = 2, 
+                              shareX = TRUE,
+                              titleX = FALSE)  %>%
+  rangeslider() %>%
+  layout(hovermode = "x")
+
+GME_new <- GME_new %>% layout(title = "GameStop stockprice data day wise",
+         xaxis = list(title="Date"),
+         yaxis = list(title = "Price Vs Volume "))
+
+GME_new
+```
+
+
+
